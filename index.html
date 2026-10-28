@@ -9,20 +9,21 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#F4F2EE; --card:#FDFCFA; --ink:#1D2330; --ink2:#4A5263; --muted:#7D8494; --line:#E4E0D8;
-  --accent:#2E5AAC; --accent-soft:#E3EAF7; --warm:#B85C1E; --good:#1F7A4D; --bad:#B42318; --side:#1D2330;
+  --bg:#EEF3FA; --card:#FFFFFF; --ink:#0F2240; --ink2:#3D4F6B; --muted:#6E7F99; --line:#DCE5F2;
+  --accent:#1F6FE5; --accent-soft:#E3EDFD; --warm:#B85C1E; --good:#1F7A4D; --bad:#B42318; --side:#0B2A5B;
+  --total:#EAF1FB; --grid:#E6EDF7; --imgbg:#E4ECF7;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;font-size:14px}
 a{color:inherit}
 .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-aside.side{background:var(--side);color:#E8EAF0;padding:28px 20px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:28px}
+aside.side{background:var(--side);color:#EAF1FB;padding:28px 20px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:28px}
 .brand{font-weight:800;letter-spacing:.12em;font-size:18px}
-.brand small{display:block;font-weight:500;letter-spacing:0;font-size:12px;color:#A9B0BF;margin-top:6px}
+.brand small{display:block;font-weight:500;letter-spacing:0;font-size:12px;color:#9FB6DA;margin-top:6px}
 .side nav{display:flex;flex-direction:column;gap:4px}
-.side nav a{text-decoration:none;padding:9px 12px;border-radius:8px;color:#C9CEDA;font-weight:500}
-.side nav a:hover,.side nav a.on{background:#2C3446;color:#fff}
-.side .foot{margin-top:auto;font-size:12px;color:#8E95A6;line-height:1.6}
+.side nav a{text-decoration:none;padding:9px 12px;border-radius:8px;color:#C5D5EE;font-weight:500}
+.side nav a:hover,.side nav a.on{background:#17407F;color:#fff}
+.side .foot{margin-top:auto;font-size:12px;color:#8DA4C8;line-height:1.6}
 main{padding:28px 32px 60px;min-width:0;max-width:1600px}
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
 .top h1{margin:0;font-size:24px;font-weight:800}
@@ -54,13 +55,13 @@ th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;whit
 th{font-size:12px;color:var(--muted);font-weight:500;cursor:pointer;user-select:none;position:sticky;top:0;background:var(--card)}
 th:first-child,td:first-child{text-align:left}
 td:first-child{white-space:normal;min-width:220px;max-width:420px}
-tr.total td{font-weight:700;background:#F1EEE8}
+tr.total td{font-weight:700;background:var(--total)}
 .scroll{overflow:auto;max-height:520px}
-.th-sort::after{content:" ↕";color:#C3C6CE}
+.th-sort::after{content:" ↕";color:#B7C6DD}
 .th-sort.asc::after{content:" ↑";color:var(--ink)} .th-sort.desc::after{content:" ↓";color:var(--ink)}
 .creatives{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .cr{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-.cr .img{aspect-ratio:1/1;background:#E9E6E0 center/cover no-repeat;position:relative}
+.cr .img{aspect-ratio:1/1;background:var(--imgbg) center/cover no-repeat;position:relative}
 .cr .rank{position:absolute;left:8px;top:8px;background:var(--ink);color:#fff;font-weight:800;border-radius:6px;padding:2px 8px;font-size:12px}
 .cr .body{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .cr .nm{font-weight:700;font-size:13px;line-height:1.35;word-break:break-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -87,6 +88,9 @@ tr.total td{font-weight:700;background:#F1EEE8}
 .brand-card dl{display:grid;grid-template-columns:auto 1fr auto;gap:4px 8px;margin:0;font-size:13px;align-items:baseline}
 .brand-card dt{color:var(--muted);white-space:nowrap} .brand-card dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
 .brand-card dd.dd2 .dl{margin:0;font-size:11px}
+main section[data-tab]{display:none}
+main section[data-tab].show{display:block}
+.side nav a{cursor:pointer}
 .notice{background:#FFF7E6;border:1px solid #F2D9A6;color:#6B4A0F;border-radius:10px;padding:12px 14px;margin-top:12px;line-height:1.6}
 @media (max-width:1280px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.creatives{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:1100px){.grid3{grid-template-columns:1fr}}
 @media (max-width:860px){.layout{grid-template-columns:1fr}aside.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:16px}.side nav{flex-direction:row;flex-wrap:wrap}.side .foot{display:none}main{padding:16px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.creatives{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
@@ -96,16 +100,13 @@ tr.total td{font-weight:700;background:#F1EEE8}
 <div class="layout">
   <aside class="side">
     <div class="brand">DAYS ON<small>메타 광고 성과 리포트</small></div>
-    <nav>
-      <a href="#summary" class="on">요약</a>
-      <a href="#brands">계정별</a>
-      <a href="#engage">광고 반응</a>
-      <a href="#trend">일별 추이</a>
-      <a href="#daily">일별 데이터</a>
-      <a href="#campaigns">캠페인</a>
-      <a href="#creatives">소재 TOP5</a>
-      <a href="#audience">타겟 · 지면 · 기기</a>
-      <a href="#ads">소재 전체</a>
+    <nav id="tabNav">
+      <a href="#" data-tab="summary" class="on">요약</a>
+      <a href="#" data-tab="account">계정별 성과</a>
+      <a href="#" data-tab="daily">일별 추이 · 데이터</a>
+      <a href="#" data-tab="campaigns">캠페인</a>
+      <a href="#" data-tab="creatives">소재</a>
+      <a href="#" data-tab="audience">타겟 · 지면 · 기기</a>
     </nav>
     <div class="foot" id="foot">불러오는 중…</div>
   </aside>
@@ -127,22 +128,22 @@ tr.total td{font-weight:700;background:#F1EEE8}
     </div>
     <div class="range-label" id="rangeLabel"></div>
 
-    <section>
+    <section data-tab="summary">
       <div class="kpis" id="kpis"></div>
     </section>
 
-    <section id="engage">
+    <section id="engage" data-tab="summary">
       <h2>광고 반응 <span class="hint">광고로 생긴 게시물 반응 · 인스타그램·페이스북 합산 · 증감은 직전 동일 기간 대비</span></h2>
       <div class="kpis" id="engKpis"></div>
     </section>
 
-    <section id="brands">
+    <section id="brands" data-tab="account">
       <h2>계정별 성과 <span class="hint">계정 기준 · 카드를 누르면 해당 계정만 보기 · 증감은 직전 동일 기간 대비</span></h2>
       <div class="brands" id="brandCards"></div>
       <div class="card scroll"><table id="brandTable"></table></div>
     </section>
 
-    <section id="trend">
+    <section id="trend" data-tab="daily">
       <h2>일별 추이 <span class="hint">지표를 골라 보세요</span></h2>
       <div class="card">
         <div class="tabs" id="trendTabs"></div>
@@ -150,23 +151,23 @@ tr.total td{font-weight:700;background:#F1EEE8}
       </div>
     </section>
 
-    <section id="daily">
+    <section id="daily" data-tab="daily">
       <h2>일별 데이터 <span class="hint">증감은 전일 대비 · 열 제목을 누르면 정렬</span></h2>
       <div class="card scroll"><table id="dayTable"></table></div>
     </section>
 
-    <section id="campaigns">
+    <section id="campaigns" data-tab="campaigns">
       <h2>캠페인별 성과 <span class="hint">열 제목을 누르면 정렬</span></h2>
       <div class="card scroll"><table id="campTable"></table></div>
     </section>
 
-    <section id="creatives">
+    <section id="creatives" data-tab="creatives">
       <h2>소재 TOP5</h2>
       <div class="tabs" id="crTabs"></div>
       <div class="creatives" id="crGrid"></div>
     </section>
 
-    <section id="audience">
+    <section id="audience" data-tab="audience">
       <h2>타겟 · 지면 · 기기</h2>
       <div class="grid3">
         <div class="card"><h2 style="font-size:15px">성별 · 연령</h2><div class="scroll" style="max-height:420px"><table id="ageTable"></table></div></div>
@@ -175,7 +176,7 @@ tr.total td{font-weight:700;background:#F1EEE8}
       </div>
     </section>
 
-    <section id="ads">
+    <section id="ads" data-tab="creatives">
       <h2>소재 전체 <span class="hint">Hook = 3초 조회/노출 · Hold = ThruPlay/3초 조회</span></h2>
       <div class="card scroll"><table id="adTable"></table></div>
     </section>
@@ -348,11 +349,11 @@ function renderTrend(rows, prows){
   if (chart) chart.destroy();
   chart = new Chart(document.getElementById('trendChart'), {
     type, data:{labels:days.map(fmtD), datasets:[
-      {label, data:vals, backgroundColor:'#2E5AAC', borderColor:'#2E5AAC', borderWidth:2, borderRadius:4, pointRadius:days.length>45?0:3, pointHoverRadius:5, tension:.25, spanGaps:true, maxBarThickness:28, order:2},
-      {label:'직전 기간', type:'line', data:pvals, borderColor:'#9AA3B5', backgroundColor:'#9AA3B5', borderDash:[5,4], borderWidth:2, pointRadius:0, pointHoverRadius:4, tension:.25, spanGaps:true, order:1}]},
+      {label, data:vals, backgroundColor:'#1F6FE5', borderColor:'#1F6FE5', borderWidth:2, borderRadius:4, pointRadius:days.length>45?0:3, pointHoverRadius:5, tension:.25, spanGaps:true, maxBarThickness:28, order:2},
+      {label:'직전 기간', type:'line', data:pvals, borderColor:'#9DB3D6', backgroundColor:'#9DB3D6', borderDash:[5,4], borderWidth:2, pointRadius:0, pointHoverRadius:4, tension:.25, spanGaps:true, order:1}]},
     options:{maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:true,position:'top',align:'end',labels:{boxWidth:14,boxHeight:2,color:'#4A5263'}}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label} ${k==='roas'?nf.format(Math.round(ctx.raw))+'%':(k==='ctr'?ctx.raw.toFixed(2)+'%':f(ctx.raw))}`}}},
-      scales:{x:{grid:{display:false},ticks:{color:'#7D8494',maxRotation:0,autoSkip:true}}, y:{beginAtZero:true,grid:{color:'#ECE9E3'},border:{display:false},ticks:{color:'#7D8494',callback:v=>k==='roas'||k==='ctr'?v+'%':nf.format(v)}}}}
+      plugins:{legend:{display:true,position:'top',align:'end',labels:{boxWidth:14,boxHeight:2,color:'#3D4F6B'}}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label} ${k==='roas'?nf.format(Math.round(ctx.raw))+'%':(k==='ctr'?ctx.raw.toFixed(2)+'%':f(ctx.raw))}`}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#6E7F99',maxRotation:0,autoSkip:true}}, y:{beginAtZero:true,grid:{color:'#E6EDF7'},border:{display:false},ticks:{color:'#6E7F99',callback:v=>k==='roas'||k==='ctr'?v+'%':nf.format(v)}}}}
   });
 }
 
@@ -495,7 +496,7 @@ function render(){
 }
 function buildBrandOptions(){
   const el = document.getElementById('selBrand');
-  if (!BRANDS.length) { el.style.display='none'; const nav=document.querySelector('.side nav a[href="#brands"]'); if(nav) nav.style.display='none'; return; }
+  if (!BRANDS.length) { el.style.display='none'; const nav=document.querySelector('#tabNav a[data-tab="account"]'); if(nav) nav.style.display='none'; if (TAB==='account') showTab('summary'); return; }
   const have = new Set(S.ads.map(r=>r.brand));
   el.innerHTML = '<option value="">계정 전체</option>' + BRANDS.concat(['기타']).filter(b=>have.has(b)).map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');
 }
@@ -554,7 +555,17 @@ document.getElementById('brandCards').addEventListener('click', e=>{ const c=e.t
 document.getElementById('btnCsv').addEventListener('click', downloadCsv);
 document.getElementById('trendTabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; S.trendMetric=b.dataset.k; renderTrend(cur(), prev()); });
 document.getElementById('crTabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; S.crMetric=b.dataset.cr; renderCreatives(cur()); });
-document.querySelectorAll('.side nav a').forEach(a=>a.addEventListener('click',()=>{document.querySelectorAll('.side nav a').forEach(x=>x.classList.remove('on')); a.classList.add('on');}));
+let TAB = 'summary';
+try { TAB = sessionStorage.getItem('tab') || 'summary'; } catch(e) {}
+function showTab(t){
+  TAB = t; try { sessionStorage.setItem('tab', t); } catch(e) {}
+  document.querySelectorAll('#tabNav a').forEach(a=>a.classList.toggle('on', a.dataset.tab===t));
+  document.querySelectorAll('main section[data-tab]').forEach(sec=>sec.classList.toggle('show', sec.dataset.tab===t && sec.style.display!=='none'));
+  if (t==='daily' && chart) chart.resize();
+  window.scrollTo({top:0});
+}
+document.getElementById('tabNav').addEventListener('click', e=>{ const a=e.target.closest('a[data-tab]'); if(!a) return; e.preventDefault(); showTab(a.dataset.tab); });
+showTab(TAB);
 init();
 </script>
 </body>
