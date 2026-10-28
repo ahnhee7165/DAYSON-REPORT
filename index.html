@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DAYS ON 메타 광고 리포트</title>
+<link rel="icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#EEF3FA; --card:#FFFFFF; --ink:#0F2240; --ink2:#3D4F6B; --muted:#6E7F99; --line:#DCE5F2;
-  --accent:#1F6FE5; --accent-soft:#E3EDFD; --warm:#B85C1E; --good:#1F7A4D; --bad:#B42318; --side:#0B2A5B;
-  --total:#EAF1FB; --grid:#E6EDF7; --imgbg:#E4ECF7;
+  --bg:#FBF6F3; --card:#FFFFFF; --ink:#231915; --ink2:#5A4B43; --muted:#8A7B72; --line:#F1E3DA;
+  --accent:#FF5400; --accent-soft:#FFEEE4; --warm:#B85C1E; --good:#1F7A4D; --bad:#B42318; --side:#E84C00;
+  --total:#FFF2EA; --grid:#F4E8E0; --imgbg:#F7E9E0;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;font-size:14px}
@@ -19,11 +20,11 @@ a{color:inherit}
 .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
 aside.side{background:var(--side);color:#EAF1FB;padding:28px 20px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:28px}
 .brand{font-weight:800;letter-spacing:.12em;font-size:18px}
-.brand small{display:block;font-weight:500;letter-spacing:0;font-size:12px;color:#9FB6DA;margin-top:6px}
+.brand small{display:block;font-weight:500;letter-spacing:0;font-size:12px;color:#FFE3D3;margin-top:6px}
 .side nav{display:flex;flex-direction:column;gap:4px}
-.side nav a{text-decoration:none;padding:9px 12px;border-radius:8px;color:#C5D5EE;font-weight:500}
-.side nav a:hover,.side nav a.on{background:#17407F;color:#fff}
-.side .foot{margin-top:auto;font-size:12px;color:#8DA4C8;line-height:1.6}
+.side nav a{text-decoration:none;padding:10px 12px;border-radius:8px;color:#FFFFFF;font-weight:600;font-size:15px;opacity:.88}
+.side nav a:hover,.side nav a.on{background:rgba(255,255,255,.2);color:#fff;opacity:1}
+.side .foot{margin-top:auto;font-size:12px;color:#FFE3D3;line-height:1.6}
 main{padding:28px 32px 60px;min-width:0;max-width:1600px}
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
 .top h1{margin:0;font-size:24px;font-weight:800}
@@ -57,7 +58,7 @@ th:first-child,td:first-child{text-align:left}
 td:first-child{white-space:normal;min-width:220px;max-width:420px}
 tr.total td{font-weight:700;background:var(--total)}
 .scroll{overflow:auto;max-height:520px}
-.th-sort::after{content:" ↕";color:#B7C6DD}
+.th-sort::after{content:" ↕";color:#D8C6BB}
 .th-sort.asc::after{content:" ↑";color:var(--ink)} .th-sort.desc::after{content:" ↓";color:var(--ink)}
 .creatives{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .cr{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
@@ -359,11 +360,11 @@ function renderTrend(rows, prows){
   if (chart) chart.destroy();
   chart = new Chart(document.getElementById('trendChart'), {
     type, data:{labels:days.map(fmtD), datasets:[
-      {label, data:vals, backgroundColor:'#1F6FE5', borderColor:'#1F6FE5', borderWidth:2, borderRadius:4, pointRadius:days.length>45?0:3, pointHoverRadius:5, tension:.25, spanGaps:true, maxBarThickness:28, order:2},
-      {label:'직전 기간', type:'line', data:pvals, borderColor:'#9DB3D6', backgroundColor:'#9DB3D6', borderDash:[5,4], borderWidth:2, pointRadius:0, pointHoverRadius:4, tension:.25, spanGaps:true, order:1}]},
+      {label, data:vals, backgroundColor:'#FF5400', borderColor:'#FF5400', borderWidth:2, borderRadius:4, pointRadius:days.length>45?0:3, pointHoverRadius:5, tension:.25, spanGaps:true, maxBarThickness:28, order:2},
+      {label:'직전 기간', type:'line', data:pvals, borderColor:'#C9B4A7', backgroundColor:'#C9B4A7', borderDash:[5,4], borderWidth:2, pointRadius:0, pointHoverRadius:4, tension:.25, spanGaps:true, order:1}]},
     options:{maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:true,position:'top',align:'end',labels:{boxWidth:14,boxHeight:2,color:'#3D4F6B'}}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label} ${k==='roas'?nf.format(Math.round(ctx.raw))+'%':(k==='ctr'?ctx.raw.toFixed(2)+'%':f(ctx.raw))}`}}},
-      scales:{x:{grid:{display:false},ticks:{color:'#6E7F99',maxRotation:0,autoSkip:true}}, y:{beginAtZero:true,grid:{color:'#E6EDF7'},border:{display:false},ticks:{color:'#6E7F99',callback:v=>k==='roas'||k==='ctr'?v+'%':nf.format(v)}}}}
+      plugins:{legend:{display:true,position:'top',align:'end',labels:{boxWidth:14,boxHeight:2,color:'#5A4B43'}}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label} ${k==='roas'?nf.format(Math.round(ctx.raw))+'%':(k==='ctr'?ctx.raw.toFixed(2)+'%':f(ctx.raw))}`}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#8A7B72',maxRotation:0,autoSkip:true}}, y:{beginAtZero:true,grid:{color:'#F4E8E0'},border:{display:false},ticks:{color:'#8A7B72',callback:v=>k==='roas'||k==='ctr'?v+'%':nf.format(v)}}}}
   });
 }
 
@@ -521,7 +522,7 @@ async function getJson(path, fallback){
 async function init(){
   const custom = new URLSearchParams(location.search).get('data');
   const paths = custom ? [custom] : ACCT.paths;
-  document.querySelector('.brand').firstChild.textContent = 'DAYS ON';
+  document.querySelector('.brand').innerHTML = '<img src="assets/logo.png" alt="DAYS ON" style="display:block;width:150px;height:auto;margin:2px 0 10px"><small>메타 광고 성과 리포트</small>';
   document.title = `${ACCT.label} 메타 광고 리포트`;
   const sa = document.getElementById('selAccount');
   if (ACCOUNTS.length < 2) sa.style.display='none';
