@@ -180,7 +180,7 @@ main section[data-tab].show{display:block}
       <div class="grid2">
         <div class="card funnel"><div class="panel-title">전환 퍼널</div><div id="funnel"></div><div class="note">막대 길이는 노출 대비 비율(로그 눈금) · 오른쪽은 이전 단계 대비 전환율</div></div>
         <div class="card"><div class="panel-title">도달 · 빈도 <span class="hint" style="font-weight:400;font-size:12px;color:var(--muted)">기간 합산이 안 되는 지표라 최근 7일·30일 기준</span></div><div class="mini" id="freqBox"></div>
-          <div id="sharedBox" style="margin-top:16px"></div></div>
+</div>
       </div>
     </section>
 
@@ -611,9 +611,8 @@ function renderFreqShared(rows){
     }
   }
   box.innerHTML = items.join('') || '<div class="empty" style="grid-column:1/-1">다음 데이터 수집부터 표시됩니다</div>';
-  const sb = document.getElementById('sharedBox');
-  const col = rows.filter(r=>r.pixel_purchases!=null);
-  if (!col.length) { sb.innerHTML=''; return; }
+  return;
+  const sb = null, col = [];
   const t = sum(col);
   const direct = t.pixel_purchases, total = Math.max(t.purchases, direct), shared = Math.max(0, total-direct);
   const dv = t.pixel_purchase_value, tv = Math.max(t.purchase_value, dv);
@@ -763,11 +762,9 @@ async function init(){
     // 협력광고: 광고관리자 '공유 항목이 포함된 구매' 기준으로 구매·매출 사용
     if (base === 'data/collab') for (const r of [...ads, ...ag, ...pl, ...dv]) {
       if (r.shared_purchases == null) continue;
-      r.pixel_purchases = r.purchases; r.pixel_purchase_value = r.purchase_value;
-      if (r.shared_purchases > r.purchases || r.shared_purchase_value > r.purchase_value) {
-        r.purchases = r.shared_purchases; r.purchase_value = r.shared_purchase_value;
-      }
-      if ((r.shared_add_to_cart||0) > (r.add_to_cart||0)) { r.add_to_cart = r.shared_add_to_cart; r.add_to_cart_value = r.shared_add_to_cart_value; }
+      // 일반(픽셀) 구매는 쓰지 않고 공유 항목 구매·매출·장바구니만 사용
+      r.purchases = r.shared_purchases || 0; r.purchase_value = r.shared_purchase_value || 0;
+      r.add_to_cart = r.shared_add_to_cart || 0; r.add_to_cart_value = r.shared_add_to_cart_value || 0;
     }
     const tag = (ACCT.tag||{})[base]; if (tag) ads.forEach(r=>{ r._brand=tag; r.campaign=`[${tag}] ${r.campaign}`; r.adset=`[${tag}] ${r.adset}`; });
     return {ads, meta, creatives, ag, pl, dv, campaigns, freq, tag};
@@ -792,7 +789,7 @@ async function init(){
     document.querySelector('main').insertAdjacentHTML('beforeend', '<div class="notice">GitHub Actions의 <b>메타 데이터 업데이트</b> 워크플로를 한 번 실행하면 데이터가 채워집니다. (Actions 탭 › Run workflow · 첫 실행은 일수 180 권장)</div>');
     return;
   }
-  document.getElementById('sub').textContent = `${meta.account_name||ACCT.label} · 링크 클릭 기준 · 구매/매출은 메타 기여(계정 기본 기여 설정) 기준` + (ACCT.paths.includes('data/collab') ? ' · 협력광고는 공유 항목 포함 구매 기준' : '');
+  document.getElementById('sub').textContent = `${meta.account_name||ACCT.label} · 링크 클릭 기준 · 구매/매출은 메타 기여(계정 기본 기여 설정) 기준` + (ACCT.paths.includes('data/collab') ? ' · 협력광고 구매·매출은 공유 항목 기준' : '');
   buildMonthOptions(); buildBrandOptions(); buildCampaignOptions(); onMonthChange();
 }
 document.getElementById('selMonth').addEventListener('change', onMonthChange);
