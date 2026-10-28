@@ -36,12 +36,19 @@ BASE_FIELDS = [
     "impressions", "reach", "clicks", "inline_link_clicks", "spend",
     "actions", "action_values", "video_thruplay_watched_actions",
 ]
+# 협력광고(컬래버레이티브 광고): 공유 항목(카탈로그 세그먼트) 구매·매출
+SHARED_FIELDS = ["catalog_segment_actions", "catalog_segment_value"]
+USE_SHARED = True
 AD_FIELDS = ["campaign_id", "campaign_name", "adset_id", "adset_name", "ad_id", "ad_name"] + BASE_FIELDS
 BREAKDOWNS = {
     "age_gender": "age,gender",
     "placement": "publisher_platform,platform_position",
     "device": "impression_device",
 }
+
+
+class InvalidField(Exception):
+    """요청한 필드를 메타가 지원하지 않음 — 해당 필드 없이 다시 요청."""
 
 
 class TooMuchData(Exception):
@@ -79,6 +86,8 @@ def call(url, params=None):
                 print(f"  일시 오류/호출 한도 - {wait}초 후 재시도")
                 time.sleep(wait)
                 continue
+            if code == 100 and ("field" in msg.lower() or "catalog_segment" in msg):
+                raise InvalidField(msg)
             if code == 190:
                 fail("토큰이 만료되었거나 잘못되었습니다. 저장소 Secret의 META_ACCESS_TOKEN을 확인하세요.")
             if code in (10, 200, 294):
@@ -251,6 +260,11 @@ def metrics(r):
         "saves": pick(actions, ["onsite_conversion.post_save", "post_save"]),
         "shares": pick(actions, ["post"]),
         "engagement": pick(actions, ["post_engagement"]),
+        # 공유 항목 포함 구매(협력광고) — 광고관리자 '공유 항목이 포함된 구매'
+        "shared_purchases": pick(r.get("catalog_segment_actions"), PURCHASE_TYPES),
+        "shared_purchase_value": round(pick(r.get("catalog_segment_value"), PURCHASE_TYPES)),
+        "shared_add_to_cart": pick(r.get("catalog_segment_actions"), ATC_TYPES),
+        "shared_add_to_cart_value": round(pick(r.get("catalog_segment_value"), ATC_TYPES)),
     }
 
 
@@ -274,7 +288,16 @@ def insights_range(s, e, level, fields, breakdowns):
     if breakdowns:
         params["breakdowns"] = breakdowns
     try:
-        part = paged(f"{BASE}/act_{ACCOUNT_ID}/insights", params)
+        global USE_SHARED
+        if USE_SHARED:
+            params["fields"] = ",".join(fields + SHARED_FIELDS)
+        try:
+            part = paged(f"{BASE}/act_{ACCOUNT_ID}/insights", params)
+        except InvalidField as ex:
+            print(f"  공유 항목 지표 미지원으로 제외: {ex}")
+            USE_SHARED = False
+            params["fields"] = ",".join(fields)
+            part = paged(f"{BASE}/act_{ACCOUNT_ID}/insights", params)
     except TooMuchData:
         days = (e - s).days + 1
         if days <= 1:

@@ -533,6 +533,15 @@ async function init(){
       getJson(`${base}/ads_daily.json`, []), getJson(`${base}/meta.json`, {}), getJson(`${base}/creatives.json`, {}),
       getJson(`${base}/breakdown_age_gender.json`, []), getJson(`${base}/breakdown_placement.json`, []), getJson(`${base}/breakdown_device.json`, []),
     ]);
+    // 협력광고: 광고관리자 '공유 항목이 포함된 구매' 기준으로 구매·매출 사용
+    if (base === 'data/collab') for (const r of [...ads, ...ag, ...pl, ...dv]) {
+      if (r.shared_purchases == null) continue;
+      r.pixel_purchases = r.purchases; r.pixel_purchase_value = r.purchase_value;
+      if (r.shared_purchases > r.purchases || r.shared_purchase_value > r.purchase_value) {
+        r.purchases = r.shared_purchases; r.purchase_value = r.shared_purchase_value;
+      }
+      if ((r.shared_add_to_cart||0) > (r.add_to_cart||0)) { r.add_to_cart = r.shared_add_to_cart; r.add_to_cart_value = r.shared_add_to_cart_value; }
+    }
     const tag = (ACCT.tag||{})[base]; if (tag) ads.forEach(r=>{ r._brand=tag; r.campaign=`[${tag}] ${r.campaign}`; r.adset=`[${tag}] ${r.adset}`; });
     return {ads, meta, creatives, ag, pl, dv};
   }));
@@ -554,7 +563,7 @@ async function init(){
     document.querySelector('main').insertAdjacentHTML('beforeend', '<div class="notice">GitHub Actions의 <b>메타 데이터 업데이트</b> 워크플로를 한 번 실행하면 데이터가 채워집니다. (Actions 탭 › Run workflow · 첫 실행은 일수 180 권장)</div>');
     return;
   }
-  document.getElementById('sub').textContent = `${meta.account_name||ACCT.label} · 링크 클릭 기준 · 구매/매출은 메타 기여(계정 기본 기여 설정) 기준`;
+  document.getElementById('sub').textContent = `${meta.account_name||ACCT.label} · 링크 클릭 기준 · 구매/매출은 메타 기여(계정 기본 기여 설정) 기준` + (ACCT.paths.includes('data/collab') ? ' · 협력광고는 공유 항목 포함 구매 기준' : '');
   buildMonthOptions(); buildBrandOptions(); buildCampaignOptions(); onMonthChange();
 }
 document.getElementById('selMonth').addEventListener('change', onMonthChange);
