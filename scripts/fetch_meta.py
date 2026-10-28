@@ -430,6 +430,43 @@ def main():
         }
     save("creatives.json", creatives)
 
+    # 4) 캠페인 목적·상태 (목적별 성과 분리용)
+    camp_ids = sorted({r["campaign_id"] for r in ads if r.get("campaign_id")})
+    campaigns = load("campaigns.json", {})
+    for i in range(0, len(camp_ids), 50):
+        part = camp_ids[i:i + 50]
+        try:
+            rows = paged(f"{BASE}/act_{ACCOUNT_ID}/campaigns", {
+                "fields": "id,name,objective,effective_status,created_time",
+                "filtering": json.dumps([{"field": "id", "operator": "IN", "value": part}]),
+                "limit": 50,
+            })
+        except (TooMuchData, InvalidField):
+            continue
+        for c in rows:
+            campaigns[c["id"]] = {"name": c.get("name"), "objective": c.get("objective"),
+                                  "status": c.get("effective_status"), "created": (c.get("created_time") or "")[:10]}
+    save("campaigns.json", campaigns)
+
+    # 5) 도달·빈도 (최근 7일·30일, 계정/캠페인) — 기간 합산이 불가능한 지표라 별도 조회
+    freq = {"account": {}, "campaigns": {}}
+    for preset in ("last_7d", "last_30d"):
+        for level in ("account", "campaign"):
+            try:
+                rows = paged(f"{BASE}/act_{ACCOUNT_ID}/insights", {
+                    "level": level, "date_preset": preset, "limit": 200,
+                    "fields": "campaign_id,reach,frequency,impressions" if level == "campaign" else "reach,frequency,impressions",
+                })
+            except (TooMuchData, InvalidField):
+                continue
+            for r in rows:
+                v = {"reach": int(r.get("reach", 0) or 0), "frequency": float(r.get("frequency", 0) or 0)}
+                if level == "account":
+                    freq["account"][preset] = v
+                else:
+                    freq["campaigns"].setdefault(r.get("campaign_id"), {})[preset] = v
+    save("freq.json", freq)
+
     save("meta.json", {
         "account_id": ACCOUNT_ID,
         "account_name": account.get("name"),
