@@ -228,7 +228,19 @@ function derive(t){
 }
 
 /* ---------- 기간: 월 > 주차(매월 1일 시작 고정) > 일 ---------- */
-const weekOf = d => Math.min(5, Math.floor((+d.slice(8,10)-1)/7)+1);
+// 주차: 금요일~목요일, 매월 1일에 1주차로 리셋 (1일~첫 목요일 = 1주차, 이후 금요일마다 +1)
+const weekOf = d => {
+  const day = +d.slice(8,10);
+  const dow1 = new Date(d.slice(0,8)+'01T00:00:00Z').getUTCDay();   // 1일의 요일 (0=일 … 5=금)
+  const firstFri = 1 + ((5 - dow1 + 7) % 7);                        // 그 달 첫 금요일 날짜
+  if (firstFri === 1) return Math.floor((day-1)/7) + 1;              // 1일이 금요일이면 1일부터 1주차
+  return day < firstFri ? 1 : Math.floor((day-firstFri)/7) + 2;
+};
+const weekRange = (m, w) => {
+  const last = new Date(Date.UTC(+m.slice(0,4), +m.slice(5,7), 0)).getUTCDate();
+  const days = []; for (let i=1;i<=last;i++){ const d=`${m}-${String(i).padStart(2,'0')}`; if (weekOf(d)==w) days.push(d); }
+  return [days[0], days[days.length-1]];
+};
 const addDays = (d,n) => { const x=new Date(d+'T00:00:00Z'); x.setUTCDate(x.getUTCDate()+n); return x.toISOString().slice(0,10); };
 const daysBetween = (a,b) => Math.round((new Date(b+'T00:00:00Z')-new Date(a+'T00:00:00Z'))/864e5)+1;
 const fmtD = d => `${+d.slice(5,7)}/${+d.slice(8,10)}`;
@@ -248,7 +260,7 @@ function onMonthChange(){
   if (m.startsWith('r')) { wk.innerHTML='<option value="">주차 전체</option>'; wk.disabled=true; }
   else {
     const weeks = [...new Set(S.ads.filter(r=>r.date.startsWith(m)).map(r=>weekOf(r.date)))].sort();
-    wk.innerHTML = '<option value="">주차 전체</option>' + weeks.map(w=>`<option value="${w}">${w}주차</option>`).join('');
+    wk.innerHTML = '<option value="">주차 전체</option>' + weeks.map(w=>{ const [a,b]=weekRange(m,w); return `<option value="${w}">${w}주차 (${fmtD(a)}~${fmtD(b)})</option>`; }).join('');
     wk.disabled=false;
   }
   fillDays();
@@ -270,10 +282,8 @@ function applyRange(){
   if (d) { from=to=d; label=`${fmtD(d)}`; }
   else if (m.startsWith('r')) { const n=+m.slice(1); to=S.lastDate; from=addDays(to,-(n-1)); label=`최근 ${n}일`; }
   else if (w) {
-    const start=(w-1)*7+1; from=`${m}-${String(start).padStart(2,'0')}`;
-    const lastDay = new Date(Date.UTC(+m.slice(0,4), +m.slice(5,7), 0)).getUTCDate();
-    to = `${m}-${String(w==5?lastDay:Math.min(start+6,lastDay)).padStart(2,'0')}`;
-    label = `${+m.slice(5)}월 ${w}주차`;
+    [from, to] = weekRange(m, w);
+    label = `${+m.slice(5)}월 ${w}주차 (${fmtD(from)}~${fmtD(to)})`;
   } else {
     from=`${m}-01`; const lastDay=new Date(Date.UTC(+m.slice(0,4), +m.slice(5,7), 0)).getUTCDate(); to=`${m}-${lastDay}`; label=`${+m.slice(5)}월`;
   }
@@ -511,7 +521,7 @@ async function getJson(path, fallback){
 async function init(){
   const custom = new URLSearchParams(location.search).get('data');
   const paths = custom ? [custom] : ACCT.paths;
-  document.querySelector('.brand').firstChild.textContent = ACCT.label;
+  document.querySelector('.brand').firstChild.textContent = 'DAYS ON';
   document.title = `${ACCT.label} 메타 광고 리포트`;
   const sa = document.getElementById('selAccount');
   if (ACCOUNTS.length < 2) sa.style.display='none';
