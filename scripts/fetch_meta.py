@@ -31,6 +31,7 @@ KST = ZoneInfo("Asia/Seoul")
 PURCHASE_TYPES = ["omni_purchase", "offsite_conversion.fb_pixel_purchase", "purchase"]
 ATC_TYPES = ["omni_add_to_cart", "offsite_conversion.fb_pixel_add_to_cart", "add_to_cart"]
 LPV_TYPES = ["omni_landing_page_view", "landing_page_view"]
+VC_TYPES = ["omni_view_content", "offsite_conversion.fb_pixel_view_content", "view_content"]
 
 BASE_FIELDS = [
     "impressions", "reach", "clicks", "inline_link_clicks", "spend",
@@ -40,11 +41,16 @@ BASE_FIELDS = [
 SHARED_FIELDS = ["catalog_segment_actions", "catalog_segment_value"]
 USE_SHARED = True
 AD_FIELDS = ["campaign_id", "campaign_name", "adset_id", "adset_name", "ad_id", "ad_name"] + BASE_FIELDS
+# (분해 기준, 수집 단위) — 연령·성별은 제품별로 볼 수 있게 광고세트 단위로 수집
+# (광고세트명 두 번째 칸이 제품명: 0819-0000_올레샷_전환_...)
 BREAKDOWNS = {
-    "age_gender": "age,gender",
-    "placement": "publisher_platform,platform_position",
-    "device": "impression_device",
+    "age_gender": ("age,gender", "adset"),
+    "placement": ("publisher_platform,platform_position", "account"),
 }
+
+
+SLIM_KEYS = ["impressions", "clicks", "spend", "purchases", "purchase_value", "add_to_cart", "add_to_cart_value",
+             "shared_purchases", "shared_purchase_value", "shared_add_to_cart", "shared_add_to_cart_value"]
 
 
 class InvalidField(Exception):
@@ -252,6 +258,7 @@ def metrics(r):
         "add_to_cart": pick(actions, ATC_TYPES),
         "add_to_cart_value": round(pick(values, ATC_TYPES)),
         "landing_page_views": pick(actions, LPV_TYPES),
+        "view_content": pick(actions, VC_TYPES),
         "video_3s": pick(actions, ["video_view"]),
         "thruplay": pick(r.get("video_thruplay_watched_actions"), ["video_view"]),
         # 광고로 생긴 게시물 반응 (인스타그램·페이스북 합산)
@@ -265,6 +272,7 @@ def metrics(r):
         "shared_purchase_value": round(pick(r.get("catalog_segment_value"), PURCHASE_TYPES)),
         "shared_add_to_cart": pick(r.get("catalog_segment_actions"), ATC_TYPES),
         "shared_add_to_cart_value": round(pick(r.get("catalog_segment_value"), ATC_TYPES)),
+        "shared_view_content": pick(r.get("catalog_segment_actions"), VC_TYPES),
     }
 
 
@@ -384,18 +392,30 @@ def main():
     save("ads_daily.json", ads)
 
     # 2) 분해 데이터(계정 단위 일별)
-    for name, bd in BREAKDOWNS.items():
-        raw = insights(since, until, "account", BASE_FIELDS, bd)
+    for name, (bd, level) in BREAKDOWNS.items():
+        fields = BASE_FIELDS + (["campaign_id", "campaign_name", "adset_id", "adset_name"] if level == "adset" else [])
+        raw = insights(since, until, level, fields, bd)
         rows = []
         for r in raw:
             row = {"date": r["date_start"]}
+            if level == "adset":
+                row.update({"campaign_id": r.get("campaign_id"), "campaign": r.get("campaign_name", ""),
+                            "adset_id": r.get("adset_id"), "adset": r.get("adset_name", "")})
             for dim in bd.split(","):
                 row[dim] = r.get(dim, "unknown")
-            row.update(metrics(r))
+            m = metrics(r)
+            if level == "adset":
+                if not m["spend"] and not m["impressions"]:
+                    continue
+                m = {k: m[k] for k in SLIM_KEYS}  # 파일 크기를 줄이려고 필요한 지표만 보관
+            row.update(m)
             rows.append(row)
-        dims = bd.split(",")
-        rows = merge(load(f"breakdown_{name}.json", []), rows, since, until,
-                     key=lambda x, d=dims: (x["date"],) + tuple(str(x[k]) for k in d))
+        dims = (["adset_id"] if level == "adset" else []) + bd.split(",")
+        old = load(f"breakdown_{name}.json", [])
+        if level == "adset":
+            old = [x for x in old if x.get("adset_id")]  # 예전 계정 단위 행은 버림
+        rows = merge(old, rows, since, until,
+                     key=lambda x, d=dims: (x["date"],) + tuple(str(x.get(k)) for k in d))
         save(f"breakdown_{name}.json", rows)
 
     # 3) 소재 정보(썸네일·상태) — 데이터에 등장한 광고만 보관
@@ -447,6 +467,26 @@ def main():
             campaigns[c["id"]] = {"name": c.get("name"), "objective": c.get("objective"),
                                   "status": c.get("effective_status"), "created": (c.get("created_time") or "")[:10]}
     save("campaigns.json", campaigns)
+
+    # 4-1) 광고세트 최적화 이벤트 (캠페인 목표별: 구매전환 / 기타전환(장바구니·콘텐츠 조회) 구분용)
+    adset_ids = sorted({r["adset_id"] for r in ads if r.get("adset_id")})
+    adsets = load("adsets.json", {})
+    for i in range(0, len(adset_ids), 50):
+        part = adset_ids[i:i + 50]
+        try:
+            rows = paged(f"{BASE}/act_{ACCOUNT_ID}/adsets", {
+                "fields": "id,name,campaign_id,optimization_goal,promoted_object,effective_status",
+                "filtering": json.dumps([{"field": "id", "operator": "IN", "value": part}]),
+                "limit": 50,
+            })
+        except (TooMuchData, InvalidField):
+            continue
+        for a in rows:
+            adsets[a["id"]] = {"name": a.get("name"), "campaign_id": a.get("campaign_id"),
+                               "goal": a.get("optimization_goal"),
+                               "event": (a.get("promoted_object") or {}).get("custom_event_type"),
+                               "status": a.get("effective_status")}
+    save("adsets.json", adsets)
 
     # 5) 도달·빈도 (최근 7일·30일, 계정/캠페인) — 기간 합산이 불가능한 지표라 별도 조회
     freq = {"account": {}, "campaigns": {}}
