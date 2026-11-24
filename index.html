@@ -20,47 +20,63 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',s
 input[type=date]{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:7px 10px}
 .filters .tilde{color:var(--muted)}
 a{color:inherit}
-.layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-aside.side{background:var(--side);color:#EAF1FB;padding:28px 20px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:28px}
-.brand{font-weight:800;letter-spacing:.12em;font-size:18px}
-.brand small{display:block;font-weight:500;letter-spacing:0;font-size:12px;color:#FFE3D3;margin-top:6px}
-.side nav{display:flex;flex-direction:column;gap:4px}
-.side nav a{text-decoration:none;padding:10px 12px;border-radius:8px;color:#FFFFFF;font-weight:600;font-size:15px;opacity:.88}
-.side nav a:hover,.side nav a.on{background:rgba(255,255,255,.2);color:#fff;opacity:1}
-.side .foot{margin-top:auto;font-size:12px;color:#FFE3D3;line-height:1.6}
-main{padding:28px 32px 60px;min-width:0;max-width:1600px}
-.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
-.top h1{margin:0;font-size:24px;font-weight:800}
-.top .sub{color:var(--muted);margin-top:4px}
+.wrap{max-width:1440px;margin:0 auto;padding:0 20px}
+.hero{background:linear-gradient(120deg,#E84C00 0%,#FF5400 48%,#FF8A3D 100%);color:#fff}
+.hero-in{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;padding:26px 20px 70px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{display:block;width:132px;height:auto}
+.brand small{display:block;font-size:12px;font-weight:500;color:rgba(255,255,255,.85);margin-top:2px}
+.hero h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.hero .sub{color:rgba(255,255,255,.85);font-size:12px;margin-top:6px}
+.hero .foot{color:rgba(255,255,255,.75);font-size:12px;margin-top:2px}
+.hero .filters{color:rgba(255,255,255,.85)}
+.hero select,.hero input[type=date]{border-color:transparent}
+.hero #btnCsv{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.5)}
+.hero .filters .tilde{color:rgba(255,255,255,.85)}
+.panel{background:var(--card);border-radius:16px;box-shadow:0 6px 24px rgba(232,76,0,.10);margin-top:-48px;position:relative}
+.acc-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:14px 20px 0}
+.acc-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.acc-tabs .pill{padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:500;color:var(--muted)}
+.acc-tabs .pill:hover{border-color:var(--accent);color:var(--accent)}
+.acc-tabs .pill.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+.acc-bar .filters select{max-width:360px}
+.sec-bar{padding:6px 20px 0;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:5;border-radius:16px 16px 0 0}
+#tabNav{display:flex;gap:2px;overflow-x:auto}
+#tabNav a{text-decoration:none;cursor:pointer;padding:12px 16px;font-size:14px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
+#tabNav a:hover{color:var(--accent)}
+#tabNav a.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+main{padding:18px 20px 28px;min-width:0;min-height:420px}
+.page-foot{color:var(--muted);font-size:12px;line-height:1.6;padding:16px 4px 40px}
 .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 select,button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:8px 12px}
 select:disabled{opacity:.45}
 button{cursor:pointer;font-weight:500}
 button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
 .range-label{color:var(--ink2);font-size:13px;margin-left:4px}
-section{margin-top:28px}
+section{margin-top:24px}
+main>.range-label+section{margin-top:14px}
 section h2{font-size:17px;margin:0 0 12px;font-weight:700;display:flex;align-items:center;gap:10px}
 section h2 .hint{font-size:12px;font-weight:400;color:var(--muted)}
 .kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi{background:#FFF8F3;border:none;border-top:3px solid #FF9A5C;border-radius:12px;padding:14px 16px}
 .kpi .k{color:var(--muted);font-size:12px;font-weight:500}
 .kpi .v{font-size:22px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .kpi .d{font-size:12px;margin-top:4px;font-variant-numeric:tabular-nums;color:var(--muted)}
 .kpi .d .pv{display:block;white-space:nowrap;color:var(--muted)}
 .kpi .d.up{color:var(--up)} .kpi .d.down{color:var(--down)}
 .kpi .d .d2.up{color:var(--up)} .kpi .d .d2.down{color:var(--down)} .kpi .d .d2.flat{color:var(--muted)}
-.kpi.hl{border-color:var(--accent);background:var(--accent-soft)}
+.kpi.hl{border-top-color:var(--accent);background:var(--accent-soft)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
-.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.tabs button{padding:6px 12px;font-size:13px}
-.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs{display:inline-flex;flex-wrap:wrap;gap:2px;margin-bottom:12px;background:#FFF3EB;border-radius:10px;padding:3px}
+.tabs button{padding:6px 14px;font-size:13px;border:none;background:none;color:var(--muted);border-radius:8px}
+.tabs button.on{background:var(--accent);color:#fff;font-weight:700}
 .chart-wrap{position:relative;height:300px}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
-th{font-size:12px;color:var(--muted);font-weight:500;cursor:pointer;user-select:none;position:sticky;top:0;background:var(--card)}
+th{font-size:12px;color:var(--muted);font-weight:500;cursor:pointer;user-select:none;position:sticky;top:0;background:#FFF8F3}
 th:first-child,td:first-child{text-align:left}
 td:first-child{white-space:normal;min-width:220px;max-width:420px}
-tr.total td{font-weight:700;background:var(--total)}
+tr.total td{font-weight:700;background:var(--total);border-top:2px solid var(--accent)}
 .scroll{overflow:auto;max-height:520px}
 .th-sort::after{content:" ↕";color:#D8C6BB}
 .th-sort.asc::after{content:" ↑";color:var(--ink)} .th-sort.desc::after{content:" ↓";color:var(--ink)}
@@ -95,7 +111,6 @@ tr.total td{font-weight:700;background:var(--total)}
 .brand-card dd.dd2 .dl{margin:0;font-size:11px}
 main section[data-tab]{display:none}
 main section[data-tab].show{display:block}
-.side nav a{cursor:pointer}
 .panel-title{font-size:15px;font-weight:700;margin:0 0 12px}
 .funnel .step{display:grid;grid-template-columns:110px 1fr 120px;align-items:center;gap:12px;padding:7px 0}
 .funnel .lab{font-weight:600;font-size:13px}
@@ -147,48 +162,55 @@ main section[data-tab].show{display:block}
 .chart-sm{position:relative;height:220px}
 .notice{background:#FFF7E6;border:1px solid #F2D9A6;color:#6B4A0F;border-radius:10px;padding:12px 14px;margin-top:12px;line-height:1.6}
 @media (max-width:1280px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.creatives{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:1100px){.grid3{grid-template-columns:1fr}}
-@media (max-width:860px){.layout{grid-template-columns:1fr}aside.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:16px}.side nav{flex-direction:row;flex-wrap:wrap}.side .foot{display:none}main{padding:16px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.creatives{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
+@media (max-width:860px){.hero-in{padding:20px 16px 64px}main{padding:16px}.acc-bar,.sec-bar{padding-left:12px;padding-right:12px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.creatives{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="layout">
-  <aside class="side">
-    <div class="brand">DAYS ON<small>메타 광고 성과 리포트</small></div>
-    <nav id="tabNav">
-      <a href="#" data-tab="summary" class="on">요약</a>
-      <a href="#" data-tab="account">계정별 성과</a>
-      <a href="#" data-tab="daily">일별 추이 · 데이터</a>
-      <a href="#" data-tab="objective">캠페인 목표별</a>
-      <a href="#" data-tab="campaigns">캠페인</a>
-      <a href="#" data-tab="creatives">소재</a>
-      <a href="#" data-tab="audience">타겟 · 노출 지면</a>
-    </nav>
-    <div class="foot" id="foot">불러오는 중…</div>
-  </aside>
-  <main>
-    <div class="top" id="summary">
-      <div>
-        <h1>메타 광고 성과</h1>
-        <div class="sub" id="sub">데이터를 불러오는 중입니다</div>
-      </div>
+<div class="hero">
+  <div class="wrap hero-in">
+    <div>
+      <div class="brand"><div><h1>메타 광고 성과</h1><small>DAYS ON 메타 광고 성과 리포트</small></div></div>
+      <div class="sub" id="sub">데이터를 불러오는 중입니다</div>
+      <div class="foot" id="foot">불러오는 중…</div>
+    </div>
+    <div class="filters">
+      <select id="selPreset" aria-label="기간">
+        <option value="yesterday">어제</option>
+        <option value="last7" selected>최근 7일</option>
+        <option value="last30">최근 30일</option>
+        <option value="lastweek">지난주 (월~일)</option>
+        <option value="thismonth">이번 달</option>
+        <option value="lastmonth">지난달</option>
+        <option value="all">전체 기간</option>
+        <option value="custom">직접 선택</option>
+      </select>
+      <input type="date" id="since" aria-label="시작일"><span class="tilde">~</span><input type="date" id="until" aria-label="종료일">
+      <button id="btnCsv">CSV 다운로드</button>
+    </div>
+  </div>
+</div>
+<div class="wrap">
+  <div class="panel">
+    <div class="acc-bar">
+      <nav class="acc-tabs" id="accTabs"></nav>
       <div class="filters">
-        <select id="selAccount" aria-label="광고계정"></select>
-        <select id="selPreset" aria-label="기간">
-          <option value="yesterday">어제</option>
-          <option value="last7" selected>최근 7일</option>
-          <option value="last30">최근 30일</option>
-          <option value="lastweek">지난주 (월~일)</option>
-          <option value="thismonth">이번 달</option>
-          <option value="lastmonth">지난달</option>
-          <option value="all">전체 기간</option>
-          <option value="custom">직접 선택</option>
-        </select>
-        <input type="date" id="since" aria-label="시작일"><span class="tilde">~</span><input type="date" id="until" aria-label="종료일">
+        <select id="selAccount" aria-label="광고계정" hidden></select>
         <select id="selBrand" aria-label="브랜드"></select>
         <select id="selCampaign" aria-label="캠페인"></select>
-        <button id="btnCsv">CSV 다운로드</button>
       </div>
     </div>
+    <div class="sec-bar">
+      <nav id="tabNav">
+        <a href="#" data-tab="summary" class="on">요약</a>
+        <a href="#" data-tab="account">계정별 성과</a>
+        <a href="#" data-tab="daily">일별 추이 · 데이터</a>
+        <a href="#" data-tab="objective">캠페인 목표별</a>
+        <a href="#" data-tab="campaigns">캠페인</a>
+        <a href="#" data-tab="creatives">소재</a>
+        <a href="#" data-tab="audience">타겟 · 노출 지면</a>
+      </nav>
+    </div>
+  <main>
     <div class="range-label" id="rangeLabel"></div>
 
     <section data-tab="summary">
@@ -291,6 +313,8 @@ main section[data-tab].show{display:block}
       <div class="card scroll"><table id="adTable"></table></div>
     </section>
   </main>
+  </div>
+  <p class="page-foot">협력광고 계정의 구매·매출·장바구니는 광고관리자의 <b>공유 항목 포함</b> 기준이고, 외부링크 계정은 메타 기여(계정 기본 기여 설정) 기준입니다. 증감은 선택 기간과 같은 길이의 직전 기간과 비교합니다.</p>
 </div>
 
 <script>
@@ -806,12 +830,15 @@ async function getJson(path, fallback){
 async function init(){
   const custom = new URLSearchParams(location.search).get('data');
   const paths = custom ? [custom] : ACCT.paths;
-  document.querySelector('.brand').innerHTML = '<img src="assets/logo.png" alt="DAYS ON" style="display:block;width:150px;height:auto;margin:2px 0 10px"><small>메타 광고 성과 리포트</small>';
+  document.querySelector('.brand').innerHTML = '<img src="assets/logo.png" alt="DAYS ON"><div><h1>메타 광고 성과</h1><small>DAYS ON 메타 광고 성과 리포트</small></div>';
   document.title = `${ACCT.label} 메타 광고 리포트`;
   const sa = document.getElementById('selAccount');
   if (ACCOUNTS.length < 2) sa.style.display='none';
   sa.innerHTML = ACCOUNTS.map(a=>`<option value="${a.key}" ${a.key===ACCT.key?'selected':''}>${esc(a.label)}</option>`).join('');
   sa.addEventListener('change', ()=>{ const q=new URLSearchParams(location.search); q.set('acct', sa.value); q.delete('data'); location.search=q.toString(); });
+  const at = document.getElementById('accTabs');
+  at.innerHTML = ACCOUNTS.length < 2 ? '' : ACCOUNTS.map(a=>`<button class="pill ${a.key===ACCT.key?'on':''}" data-acct="${a.key}">${esc(a.label)}</button>`).join('');
+  at.addEventListener('click', e=>{ const b=e.target.closest('[data-acct]'); if(!b || b.dataset.acct===ACCT.key) return; sa.value=b.dataset.acct; sa.dispatchEvent(new Event('change')); });
   const parts = await Promise.all(paths.map(async base => {
     const [ads, meta, creatives, ag, pl, campaigns, adsets, freq] = await Promise.all([
       getJson(`${base}/ads_daily.json`, []), getJson(`${base}/meta.json`, {}), getJson(`${base}/creatives.json`, {}),
@@ -844,10 +871,10 @@ async function init(){
   Object.assign(S, {ads, meta, creatives, bd:{age_gender:ag, placement:pl},
     campaigns: Object.assign({}, ...parts.map(x=>x.campaigns)), adsets: Object.assign({}, ...parts.map(x=>x.adsets)),
     freq: parts.filter(x=>x.freq).map(x=>({label: parts.length>1 ? (x.tag||x.meta.account_name) : '', data:x.freq}))});
-  document.getElementById('foot').innerHTML = meta.updated_at ? `광고계정 ${esc(meta.account_name||'')}<br>${esc(meta.account_id||'')}<br>업데이트 ${esc(meta.updated_at)}<br>데이터 ${esc(meta.first_date||'')} ~ ${esc(meta.last_date||'')}` : '';
+  document.getElementById('foot').innerHTML = meta.updated_at ? `마지막 갱신 ${esc(meta.updated_at)} · 데이터 ${esc(meta.first_date||'')} ~ ${esc(meta.last_date||'')} · 광고계정 ${esc(meta.account_id||'')}` : '';
   if (!ads.length) {
     document.getElementById('sub').innerHTML = '아직 수집된 데이터가 없습니다';
-    document.querySelectorAll('main section, .filters select:not(#selAccount), #btnCsv, .range-label').forEach(el=>el.style.display='none');
+    document.querySelectorAll('main section, #selPreset, #since, #until, .tilde, #selBrand, #selCampaign, #btnCsv, .range-label').forEach(el=>el.style.display='none');
     document.querySelector('main').insertAdjacentHTML('beforeend', '<div class="notice">GitHub Actions의 <b>메타 데이터 업데이트</b> 워크플로를 한 번 실행하면 데이터가 채워집니다. (Actions 탭 › Run workflow · 첫 실행은 일수 180 권장)</div>');
     return;
   }
