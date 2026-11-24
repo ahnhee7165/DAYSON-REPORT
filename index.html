@@ -205,7 +205,9 @@ main section[data-tab].show{display:block}
         <a href="#" data-tab="account">계정별 성과</a>
         <a href="#" data-tab="daily">일별 추이 · 데이터</a>
         <a href="#" data-tab="objective">캠페인 목표별</a>
-        <a href="#" data-tab="campaigns">캠페인</a>
+        <a href="#" data-tab="events">행사명별</a>
+        <a href="#" data-tab="campaigns">캠페인 · 광고세트</a>
+        <a href="#" data-tab="products">제품별</a>
         <a href="#" data-tab="creatives">소재</a>
         <a href="#" data-tab="audience">타겟 · 노출 지면</a>
       </nav>
@@ -271,9 +273,24 @@ main section[data-tab].show{display:block}
       <div id="objBlocks"></div>
     </section>
 
+    <section id="events" data-tab="events">
+      <h2>행사명별 성과 <span class="hint">캠페인명 기준으로 행사를 묶음 · 행사별 운영 기간이 달라 증감은 표시하지 않음 · 열 제목을 누르면 정렬</span></h2>
+      <div class="card scroll"><table id="eventTable"></table></div>
+    </section>
+
     <section id="campaigns" data-tab="campaigns">
       <h2>캠페인별 성과 <span class="hint">열 제목을 누르면 정렬</span></h2>
       <div class="card scroll"><table id="campTable"></table></div>
+    </section>
+
+    <section id="adsetsSec" data-tab="campaigns">
+      <h2>광고세트별 성과 <span class="hint">열 제목을 누르면 정렬</span></h2>
+      <div class="card scroll"><table id="adsetTable"></table></div>
+    </section>
+
+    <section id="productsSec" data-tab="products">
+      <h2>제품별 성과 <span class="hint">광고세트명의 제품명 기준 · 증감은 직전 동일 기간 대비 · 열 제목을 누르면 정렬</span></h2>
+      <div class="card scroll"><table id="prodTable"></table></div>
     </section>
 
     <section id="creatives" data-tab="creatives">
@@ -537,6 +554,46 @@ function renderCampaigns(rows, total, prows, ptotal){
   table(document.getElementById('campTable'),'camp',[{k:'name',l:'캠페인',f:esc}].concat(METRIC_COLS), data, total, toMap(groupBy(prows, r=>r.campaign)), ptotal);
 }
 
+/* ---------- 광고세트 ---------- */
+function renderAdsets(rows, total, prows, ptotal){
+  const data = groupBy(rows, r=>r.adset, rs=>({campaign:rs[0].campaign}));
+  const cols = [{k:'name',l:'광고세트',html:r=>`${esc(r.name)}<div style="font-size:11px;color:var(--muted)">${esc(r.campaign)}</div>`}].concat(METRIC_COLS);
+  table(document.getElementById('adsetTable'),'adset',cols, data, total, toMap(groupBy(prows, r=>r.adset)), ptotal);
+}
+
+/* ---------- 제품별 (장바구니 지표를 구매 앞에) ---------- */
+const PROD_COLS = [
+  {k:'spend',l:'광고비',f:won,delta:1},{k:'impressions',l:'노출',f:n0},{k:'clicks',l:'링크 클릭',f:n0,delta:1},{k:'ctr',l:'CTR',f:v=>pct(v),delta:1},{k:'cpc',l:'CPC',f:won,delta:1},
+  {k:'add_to_cart',l:'장바구니 수',f:n0,delta:1},{k:'add_to_cart_value',l:'장바구니 전환값',f:won,delta:1},
+  {k:'purchases',l:'구매',f:n0,delta:1},{k:'purchase_value',l:'구매 매출',f:won,delta:1},{k:'roas',l:'ROAS',f:roasF,delta:1},{k:'cpa',l:'CPA',f:won,delta:1},
+];
+function renderProducts(rows, total, prows, ptotal){
+  const key = r=>productOf(r.adset);
+  table(document.getElementById('prodTable'),'prod',[{k:'name',l:'제품',f:esc}].concat(PROD_COLS), groupBy(rows,key), total, toMap(groupBy(prows,key)), ptotal);
+}
+
+/* ---------- 행사명별 (ROAS 증감 없음) ---------- */
+function eventOf(campaign){
+  const c = String(campaign||'').replace(/^\[[^\]]*\]\s*/,'');
+  const t = c.split('_').map(x=>x.trim()).filter(Boolean);
+  if (!t.length) return '기타';
+  if (!/^(전환|트래픽)$/.test(t[0])) return t[0].replace(/\+/g,' ');           // 행사명_매체_목표 형식
+  const rest = t.slice(1).join(' ');
+  if (/가정의달/.test(rest)) return '가정의달';
+  if (/프로모션/.test(rest)) return rest;
+  if (/그립라이브/.test(rest)) return '그립라이브';
+  if (/와디즈/.test(rest)) return '와디즈';
+  if (/카쇼라/.test(rest)) return '카쇼라';
+  if (/말레이시아/.test(rest)) return '말레이시아라이브';
+  return '상시';
+}
+function renderEvents(rows, total){
+  const data = groupBy(rows, r=>eventOf(r.campaign), rs=>{ const ds=rs.map(r=>r.date).sort(); return {period:ds[0]===ds[ds.length-1]?ds[0]:`${ds[0].slice(5)} ~ ${ds[ds.length-1].slice(5)}`, ncamp:new Set(rs.map(r=>r.campaign)).size}; });
+  const cols = [{k:'name',l:'행사명',f:esc},{k:'period',l:'운영 기간',f:esc,noTotal:1},{k:'ncamp',l:'캠페인 수',f:n0,noTotal:1}].concat(METRIC_COLS.map(c=>Object.assign({},c,{delta:0})));
+  if (!S.sort.event) S.sort.event = {k:'spend', dir:'desc'};
+  table(document.getElementById('eventTable'),'event',cols, data, total);
+}
+
 /* ---------- 브랜드 ---------- */
 function renderBrands(){
   const sec = document.getElementById('brands');
@@ -556,7 +613,7 @@ function renderBrands(){
 }
 
 /* ---------- 소재 TOP5 ---------- */
-const CR_TABS = [['roas','ROAS TOP'],['purchase_value','전환매출액 TOP'],['ctr','CTR TOP'],['clicks','링크 클릭 TOP']];
+const CR_TABS = [['roas','ROAS TOP'],['purchase_value','전환매출액 TOP'],['ctr','CTR TOP'],['clicks','클릭수 TOP']];
 function adsAgg(rows){
   return groupBy(rows, r=>r.ad_id, rs=>({ad:rs[0].ad, campaign:rs[0].campaign, adset:rs[0].adset, ad_id:rs[0].ad_id}));
 }
@@ -811,7 +868,7 @@ function downloadCsv(){
 function render(){
   const c = cur(), p = prev(); const tc = sum(c), tp = sum(p);
   renderKpis(tc,tp); renderFunnel(tc); renderFreqShared(c); renderEngagement(tc,tp); renderBrands(); renderWeekly(c); renderDow(c); renderTrend(c, p); renderDaily(c,tc);
-  renderObjectives(c,p); renderCampaigns(c,tc,p,tp); renderCreatives(c); S.galLimit=40; renderGallery(c); renderHeat(); renderBreakdowns(); renderAdTable(c,tc,p,tp);
+  renderObjectives(c,p); renderCampaigns(c,tc,p,tp); renderAdsets(c,tc,p,tp); renderProducts(c,tc,p,tp); renderEvents(c,tc); renderCreatives(c); S.galLimit=40; renderGallery(c); renderHeat(); renderBreakdowns(); renderAdTable(c,tc,p,tp);
 }
 function buildBrandOptions(){
   const el = document.getElementById('selBrand');
