@@ -302,6 +302,7 @@ main section[data-tab].show{display:block}
     <section id="audience" data-tab="audience">
       <h2>타겟 · 노출 지면</h2>
       <div class="gal-ctl"><select id="agCamp" aria-label="연령·성별 제품"></select><span class="hint" style="font-size:12px;color:var(--muted)">연령·성별은 제품별로 골라 볼 수 있어요 (광고세트명 기준) · 노출 지면은 계정 전체 기준</span></div>
+      <div class="card" style="margin-bottom:16px;overflow:auto"><div class="panel-title" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">제품별 연령 · 성별 <span style="font-weight:400;font-size:12px;color:var(--muted)">행 = 제품 · 큰 글씨 ROAS, 작은 글씨 광고비 · 구매 · 색이 진할수록 ROAS 높음</span><span class="tabs" id="pagTabs" style="margin:0 0 0 auto"><button data-v="age" class="on">연령</button><button data-v="gender">성별</button></span></div><table class="heat" id="prodAgHeat"></table></div>
       <div class="card" style="margin-bottom:16px;overflow:auto"><div class="panel-title">성별 · 연령 히트맵 <span style="font-weight:400;font-size:12px;color:var(--muted)">색이 진할수록 ROAS 높음 · 아래 작은 글씨는 광고비</span></div><table class="heat" id="heat"></table></div>
       <div class="grid3">
         <div class="card"><h2 style="font-size:15px">성별 · 연령</h2><div class="scroll" style="max-height:420px"><table id="ageTable"></table></div></div>
@@ -854,6 +855,27 @@ function renderHeat(){
       return `<td style="background:${bg};color:${fg}"><b>${c.spend?roasF(c.roas):'-'}</b><small>${won(c.spend)} · 구매 ${n0(c.purchases)}</small></td>`; }).join('')}</tr>`).join('') : '<tr><td class="empty">이 기간 데이터가 없습니다</td></tr>';
 }
 
+
+/* 제품 × 연령 / 성별 매트릭스 */
+function renderProdAg(){
+  const mode = S.pagMode || 'age';
+  const rows = agBase(S.range.from,S.range.to).filter(r=>r._product);
+  const segOf = r => mode==='age' ? r.age : r.gender;
+  const segs = mode==='age' ? [...new Set(rows.map(r=>r.age))].filter(a=>a&&a.toLowerCase()!=='unknown').sort() : ['female','male'];
+  const prods = groupBy(rows, r=>r._product).filter(x=>x.spend>0).sort((a,b)=>b.spend-a.spend);
+  const cell = {}; for (const r of rows){ const k=r._product+'|'+segOf(r); (cell[k]=cell[k]||[]).push(r); }
+  const agg = {}; for (const k in cell) agg[k]=sum(cell[k]);
+  const maxR = Math.max(0.0001, ...Object.values(agg).map(c=>c.roas||0));
+  const label = v => mode==='age' ? v : (GENDER[v]||v);
+  const el = document.getElementById('prodAgHeat');
+  if (!prods.length || !segs.length) { el.innerHTML='<tr><td class="empty">이 기간 데이터가 없습니다</td></tr>'; return; }
+  el.innerHTML = `<tr><th></th><th>합계</th>${segs.map(v=>`<th>${esc(label(v))}</th>`).join('')}</tr>` + prods.map(pr=>`<tr><td>${esc(pr.name)}</td><td style="background:#F7F1EC"><b>${roasF(pr.roas)}</b><small>${won(pr.spend)} · 구매 ${n0(pr.purchases)}</small></td>${segs.map(v=>{
+    const c = agg[pr.name+'|'+v]; if (!c || !c.spend) return '<td style="background:#FBF8F5;color:#B8AAA0">-</td>';
+    const t=(c.roas||0)/maxR; const bg=`rgba(255,84,0,${(0.08+0.82*t).toFixed(2)})`; const fg=t>0.72?'#fff':'#231915';
+    return `<td style="background:${bg};color:${fg}"><b>${roasF(c.roas)}</b><small>${won(c.spend)} · 구매 ${n0(c.purchases)}</small></td>`; }).join('')}</tr>`).join('');
+}
+document.addEventListener('click', e=>{ const b=e.target.closest('#pagTabs button'); if(!b) return; S.pagMode=b.dataset.v; document.querySelectorAll('#pagTabs button').forEach(x=>x.classList.toggle('on',x===b)); renderProdAg(); });
+
 /* ---------- CSV ---------- */
 function downloadCsv(){
   const rows = cur();
@@ -868,7 +890,7 @@ function downloadCsv(){
 function render(){
   const c = cur(), p = prev(); const tc = sum(c), tp = sum(p);
   renderKpis(tc,tp); renderFunnel(tc); renderFreqShared(c); renderEngagement(tc,tp); renderBrands(); renderWeekly(c); renderDow(c); renderTrend(c, p); renderDaily(c,tc);
-  renderObjectives(c,p); renderCampaigns(c,tc,p,tp); renderAdsets(c,tc,p,tp); renderProducts(c,tc,p,tp); renderEvents(c,tc); renderCreatives(c); S.galLimit=40; renderGallery(c); renderHeat(); renderBreakdowns(); renderAdTable(c,tc,p,tp);
+  renderObjectives(c,p); renderCampaigns(c,tc,p,tp); renderAdsets(c,tc,p,tp); renderProducts(c,tc,p,tp); renderEvents(c,tc); renderCreatives(c); S.galLimit=40; renderGallery(c); renderHeat(); renderProdAg(); renderBreakdowns(); renderAdTable(c,tc,p,tp);
 }
 function buildBrandOptions(){
   const el = document.getElementById('selBrand');
