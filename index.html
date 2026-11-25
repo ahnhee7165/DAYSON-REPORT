@@ -160,6 +160,9 @@ main section[data-tab].show{display:block}
 .heat td:first-child{min-width:70px;text-align:left;font-weight:600;background:none}
 .heat td small{display:block;font-size:11px;font-weight:400;opacity:.85}
 .chart-sm{position:relative;height:220px}
+.ttl-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.ttl-row .hint{font-size:12px;font-weight:400;color:var(--muted)}
+.aud-ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}.aud-ctl .hint{font-size:12px;color:var(--muted)}
+.aud-table td:first-child{min-width:150px}.aud-table .sbar{height:4px;background:#FF9A5C;border-radius:2px;margin-top:5px;min-width:2px}
 .notice{background:#FFF7E6;border:1px solid #F2D9A6;color:#6B4A0F;border-radius:10px;padding:12px 14px;margin-top:12px;line-height:1.6}
 @media (max-width:1280px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.creatives{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:1100px){.grid3{grid-template-columns:1fr}}
 @media (max-width:860px){.hero-in{padding:20px 16px 64px}main{padding:16px}.acc-bar,.sec-bar{padding-left:12px;padding-right:12px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.creatives{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
@@ -203,7 +206,6 @@ main section[data-tab].show{display:block}
       <nav id="tabNav">
         <a href="#" data-tab="summary" class="on">요약</a>
         <a href="#" data-tab="account">계정별 성과</a>
-        <a href="#" data-tab="daily">일별 추이 · 데이터</a>
         <a href="#" data-tab="objective">캠페인 목표별</a>
         <a href="#" data-tab="events">행사명별</a>
         <a href="#" data-tab="campaigns">캠페인 · 광고세트</a>
@@ -217,6 +219,21 @@ main section[data-tab].show{display:block}
 
     <section data-tab="summary">
       <div class="kpis" id="kpis"></div>
+    </section>
+
+    <section id="convSec" data-tab="summary">
+      <div class="card">
+        <div class="panel-title ttl-row">전환 추이 <span class="hint">일별 광고비 vs 구매 매출</span></div>
+        <div class="chart-wrap"><canvas id="convChart" aria-label="일별 광고비와 구매 매출"></canvas></div>
+      </div>
+    </section>
+
+    <section id="flowSec" data-tab="summary">
+      <div class="card">
+        <div class="panel-title ttl-row">유입 추이 <span class="hint" id="flowHint"></span></div>
+        <div class="tabs" id="flowTabs"></div>
+        <div class="chart-wrap"><canvas id="flowChart" aria-label="일별 유입 추이"></canvas></div>
+      </div>
     </section>
 
     <section id="funnelSec" data-tab="summary">
@@ -237,7 +254,7 @@ main section[data-tab].show{display:block}
       <div class="brands" id="brandCards"></div>
     </section>
 
-    <section id="weekly" data-tab="daily">
+    <section id="weekly" data-tab="summary">
       <h2>주차별 성과 <span class="hint">금~목 기준 · 매월 1일 리셋 · 증감은 직전 주차 대비</span></h2>
       <div class="grid2">
         <div class="card"><div class="panel-title">광고비 · 구매 매출</div><div class="chart-sm"><canvas id="wkChart" aria-label="주차별 광고비와 매출"></canvas></div></div>
@@ -246,7 +263,7 @@ main section[data-tab].show{display:block}
       <div class="card scroll" style="margin-top:16px"><table id="wkTable"></table></div>
     </section>
 
-    <section id="dow" data-tab="daily">
+    <section id="dow" data-tab="summary">
       <h2>요일별 성과 <span class="hint">선택 기간 합산</span></h2>
       <div class="grid2">
         <div class="card"><div class="panel-title">요일별 ROAS</div><div class="chart-sm"><canvas id="dowRoas" aria-label="요일별 ROAS"></canvas></div></div>
@@ -254,15 +271,7 @@ main section[data-tab].show{display:block}
       </div>
     </section>
 
-    <section id="trend" data-tab="daily">
-      <h2>일별 추이 <span class="hint">지표를 골라 보세요</span></h2>
-      <div class="card">
-        <div class="tabs" id="trendTabs"></div>
-        <div class="chart-wrap"><canvas id="trendChart" aria-label="일별 추이 그래프"></canvas></div>
-      </div>
-    </section>
-
-    <section id="daily" data-tab="daily">
+    <section id="daily" data-tab="summary">
       <h2>일별 데이터 <span class="hint">증감은 전일 대비 · 열 제목을 누르면 정렬</span></h2>
       <div class="card scroll"><table id="dayTable"></table></div>
     </section>
@@ -301,13 +310,14 @@ main section[data-tab].show{display:block}
 
     <section id="audience" data-tab="audience">
       <h2>타겟 · 노출 지면</h2>
-      <div class="gal-ctl"><select id="agCamp" aria-label="연령·성별 제품"></select><span class="hint" style="font-size:12px;color:var(--muted)">연령·성별은 제품별로 골라 볼 수 있어요 (광고세트명 기준) · 노출 지면은 계정 전체 기준</span></div>
-      <div class="card" style="margin-bottom:16px;overflow:auto"><div class="panel-title" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">제품별 연령 · 성별 <span style="font-weight:400;font-size:12px;color:var(--muted)">행 = 제품 · 큰 글씨 ROAS, 작은 글씨 광고비 · 구매 · 색이 진할수록 ROAS 높음</span><span class="tabs" id="pagTabs" style="margin:0 0 0 auto"><button data-v="age" class="on">연령</button><button data-v="gender">성별</button></span></div><table class="heat" id="prodAgHeat"></table></div>
-      <div class="card" style="margin-bottom:16px;overflow:auto"><div class="panel-title">성별 · 연령 히트맵 <span style="font-weight:400;font-size:12px;color:var(--muted)">색이 진할수록 ROAS 높음 · 아래 작은 글씨는 광고비</span></div><table class="heat" id="heat"></table></div>
-      <div class="grid3">
-        <div class="card"><h2 style="font-size:15px">성별 · 연령</h2><div class="scroll" style="max-height:420px"><table id="ageTable"></table></div></div>
-        <div class="card"><h2 style="font-size:15px">노출 지면</h2><div class="scroll" style="max-height:420px"><table id="plcTable"></table></div></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="panel-title ttl-row"><span id="audTitle">연령별 성과</span><span class="hint" id="audCmp" style="margin-left:auto"></span></div>
+        <div class="aud-ctl"><span class="tabs" id="audTabs" style="margin:0"></span><select id="agCamp" aria-label="제품"></select><span class="hint" id="audNote"></span></div>
+        <div class="chart-wrap"><canvas id="audChart" aria-label="타겟별 광고비와 ROAS"></canvas></div>
+        <div class="scroll" style="max-height:none;margin-top:14px"><table id="audTable" class="aud-table"></table></div>
       </div>
+      <div class="card" style="margin-bottom:16px;overflow:auto"><div class="panel-title" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">제품별 연령 · 성별 <span style="font-weight:400;font-size:12px;color:var(--muted)">행 = 제품 · 큰 글씨 ROAS, 작은 글씨 광고비 · 구매 · 색이 진할수록 ROAS 높음</span><span class="tabs" id="pagTabs" style="margin:0 0 0 auto"><button data-v="age" class="on">연령</button><button data-v="gender">성별</button></span></div><table class="heat" id="prodAgHeat"></table></div>
+      <div class="card" style="overflow:auto"><div class="panel-title">성별 · 연령 히트맵 <span style="font-weight:400;font-size:12px;color:var(--muted)">위에서 고른 제품 기준 · 색이 진할수록 ROAS 높음 · 아래 작은 글씨는 광고비</span></div><table class="heat" id="heat"></table></div>
     </section>
 
     <section id="gallerySec" data-tab="creatives">
@@ -487,27 +497,40 @@ function renderEngagement(c,p){
   }).join('');
 }
 
-/* ---------- 추이 ---------- */
-const TREND = [['spend','광고비',won,'bar'],['purchase_value','구매 매출',won,'bar'],['purchases','구매',n0,'bar'],['roas','ROAS',roasF,'line'],['clicks','링크 클릭',n0,'bar'],['ctr','CTR',v=>pct(v),'line'],['cpa','CPA',won,'line'],['cpc','CPC',won,'line'],['reactions','좋아요',n0,'bar'],['engagement','게시물 참여',n0,'bar']];
-let chart;
-function renderTrend(rows, prows){
-  document.getElementById('trendTabs').innerHTML = TREND.map(([k,l])=>`<button data-k="${k}" class="${k===S.trendMetric?'on':''}">${l}</button>`).join('');
+/* ---------- 요약: 전환 추이 · 유입 추이 (홈앤힐 방식) ---------- */
+const FLOW = {
+  imp: {label:'노출·클릭', bar:['impressions','노출',n0], line:['clicks','링크 클릭',n0]},
+  ctr: {label:'CTR', bar:['impressions','노출',n0], line:['ctr','CTR (링크)',v=>pct(v),true]},
+  cpc: {label:'CPC', bar:['clicks','링크 클릭',n0], line:['cpc','CPC (링크)',won]},
+  cpm: {label:'CPM', bar:['impressions','노출',n0], line:['cpm','CPM',won]},
+  atc: {label:'장바구니', bar:['add_to_cart','장바구니',n0], line:['atc_rate','장바구니율 (클릭 대비)',v=>pct(v),true]},
+  cvr: {label:'구매전환율', bar:['purchases','구매',n0], line:['cvr','구매전환율 (클릭 대비)',v=>pct(v),true]},
+};
+function dailySums(rows){
   const days=[]; for(let d=S.range.from; d<=S.range.to; d=addDays(d,1)) days.push(d);
-  const by = {}; for (const r of rows) (by[r.date] ||= []).push(r);
-  const [k,label,f,type] = TREND.find(t=>t[0]===S.trendMetric);
-  const conv = v => v==null?null:(k==='roas'||k==='ctr'?v*100:v);
-  const vals = days.map(d=>conv(sum(by[d]||[])[k]));
-  const pby = {}; for (const r of (prows||[])) (pby[r.date] ||= []).push(r);
-  const pvals = days.map((d,i)=>conv(sum(pby[addDays(S.range.prevFrom,i)]||[])[k]));
-  if (chart) chart.destroy();
-  chart = new Chart(document.getElementById('trendChart'), {
-    type, data:{labels:days.map(fmtD), datasets:[
-      {label, data:vals, backgroundColor:'#FF5400', borderColor:'#FF5400', borderWidth:2, borderRadius:4, pointRadius:days.length>45?0:3, pointHoverRadius:5, tension:.25, spanGaps:true, maxBarThickness:28, order:2},
-      {label:'직전 기간', type:'line', data:pvals, borderColor:'#C9B4A7', backgroundColor:'#C9B4A7', borderDash:[5,4], borderWidth:2, pointRadius:0, pointHoverRadius:4, tension:.25, spanGaps:true, order:1}]},
+  const by={}; for (const r of rows) (by[r.date] ||= []).push(r);
+  return {days, t: days.map(d=>{ const x=sum(by[d]||[]); x.atc_rate = x.clicks ? x.add_to_cart/x.clicks : null; return x; })};
+}
+function dualChart(id, labels, bar, line, fmtBar, fmtLine){
+  return mkChart(id, {type:'bar', data:{labels, datasets:[
+      {type:'line', label:line.label, data:line.data, yAxisID:'y1', borderColor:'#FF5400', backgroundColor:'#FF5400', borderWidth:2.5, pointRadius:labels.length>45?0:3, pointHoverRadius:5, tension:.35, spanGaps:true, order:1},
+      {type:'bar', label:bar.label, data:bar.data, yAxisID:'y', backgroundColor:'#F9C9AC', borderRadius:4, maxBarThickness:46, order:2}]},
     options:{maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:true,position:'top',align:'end',labels:{boxWidth:14,boxHeight:2,color:'#5A4B43'}}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label} ${k==='roas'?nf.format(Math.round(ctx.raw))+'%':(k==='ctr'?ctx.raw.toFixed(2)+'%':f(ctx.raw))}`}}},
-      scales:{x:{grid:{display:false},ticks:{color:'#8A7B72',maxRotation:0,autoSkip:true}}, y:{beginAtZero:true,grid:{color:'#F4E8E0'},border:{display:false},ticks:{color:'#8A7B72',callback:v=>k==='roas'||k==='ctr'?v+'%':nf.format(v)}}}}
-  });
+      plugins:{legend:{position:'top',labels:{boxWidth:28,boxHeight:10,color:'#5A4B43'}}, tooltip:{callbacks:{label:c=>`${c.dataset.label} ${c.dataset.yAxisID==='y1'?fmtLine(c.raw):fmtBar(c.raw)}`}}},
+      scales:{...AX, y:{...yAx(short), position:'left'}, y1:{beginAtZero:true, position:'right', grid:{display:false}, border:{display:false}, ticks:{color:'#8A7B72', callback:v=>fmtLine(v,true)}}}}});
+}
+function renderConv(rows){
+  const {days,t} = dailySums(rows);
+  dualChart('convChart', days.map(fmtD), {label:'광고비', data:t.map(x=>x.spend)}, {label:'구매 매출', data:t.map(x=>x.purchase_value)}, won, (v,axis)=>axis?short(v):won(v));
+}
+function renderFlow(rows){
+  const view = FLOW[S.flow] ? S.flow : (S.flow='imp');
+  document.getElementById('flowTabs').innerHTML = Object.entries(FLOW).map(([k,v])=>`<button data-flow="${k}" class="${k===view?'on':''}">${v.label}</button>`).join('');
+  const {days,t} = dailySums(rows), V = FLOW[view];
+  document.getElementById('flowHint').textContent = `일별 ${V.bar[1]} · ${V.line[1]}`;
+  const [lk,ll,lf,isRate] = V.line;
+  dualChart('flowChart', days.map(fmtD), {label:V.bar[1], data:t.map(x=>x[V.bar[0]])}, {label:ll, data:t.map(x=>x[lk]==null?null:(isRate?x[lk]*100:x[lk]))},
+    V.bar[2], (v,axis)=> v==null?'-':(isRate ? (axis?v.toFixed(1):v.toFixed(2))+'%' : (axis?short(v):lf(v))));
 }
 
 /* ---------- 표 공통 ---------- */
@@ -664,18 +687,49 @@ function buildAgProdOptions(){
   el.value = S.agProd || '';
   el.disabled = !g.length;
 }
+const AUD_DIMS = {
+  age:      {label:'연령', ag:true,  key:r=>(!r.age||/unknown/i.test(r.age))?'알 수 없음':r.age, order:['13-17','18-24','25-34','35-44','45-54','55-64','65+','알 수 없음']},
+  gender:   {label:'성별', ag:true,  key:r=>GENDER[r.gender]||'알 수 없음', order:['여성','남성','알 수 없음','미상']},
+  platform: {label:'플랫폼', ag:false, key:r=>PLATFORM[r.publisher_platform]||r.publisher_platform},
+  placement:{label:'노출위치', ag:false, key:r=>`${PLATFORM[r.publisher_platform]||r.publisher_platform} · ${POSITION[r.platform_position]||r.platform_position}`},
+};
+const plRows = (f,t) => (S.bd.placement||[]).filter(r=>inRange(r,f,t) && (!S.brand || r._brand===S.brand));
+let audChart;
 function renderBreakdowns(){
-  const f=S.range.from, t=S.range.to;
   buildAgProdOptions();
-  const cols = mx => [{k:'name',l:'구분',f:esc}, shareCol(mx), {k:'ctr',l:'CTR',f:v=>pct(v)}, {k:'purchases',l:'구매',f:n0}, {k:'roas',l:'ROAS',f:roasF}];
-  const mk = (key, fn, id) => {
-    const rows = key==='age_gender' ? agRows(f,t) : (S.bd[key]||[]).filter(r=>inRange(r,f,t));
-    const g = groupBy(rows, fn); const mx = Math.max(0,...g.map(x=>x.spend));
-    table(document.getElementById(id), id, cols(mx), g);
-  };
-  mk('age_gender', r=>`${GENDER[r.gender]||r.gender} ${r.age}`, 'ageTable');
-  mk('placement', r=>`${PLATFORM[r.publisher_platform]||r.publisher_platform} · ${POSITION[r.platform_position]||r.platform_position}`, 'plcTable');
+  const dim = AUD_DIMS[S.aud] ? S.aud : (S.aud='age'), D = AUD_DIMS[dim];
+  const f=S.range.from, t=S.range.to, pf=S.range.prevFrom, pt=S.range.prevTo;
+  document.getElementById('audTabs').innerHTML = Object.entries(AUD_DIMS).map(([k,v])=>`<button data-aud="${k}" class="${k===dim?'on':''}">${v.label}</button>`).join('');
+  document.getElementById('audTitle').textContent = `${D.label}별 성과`;
+  document.getElementById('audCmp').textContent = `비교 ${pf} ~ ${pt}`;
+  const sel = document.getElementById('agCamp');
+  if (!D.ag) sel.disabled = true;
+  document.getElementById('audNote').textContent = D.ag ? '제품을 고르면 그 제품만 볼 수 있어요 (광고세트명 기준)' : '플랫폼·노출위치는 메타가 제품(광고세트) 단위로 주지 않아 계정 전체 기준이에요 · 캠페인 필터도 적용되지 않아요';
+  const cur = D.ag ? agRows(f,t) : plRows(f,t), prv = D.ag ? agRows(pf,pt) : plRows(pf,pt);
+  let g = groupBy(cur, D.key).filter(x=>x.spend>0);
+  const pmap = toMap(groupBy(prv, D.key));
+  const tot = sum(cur), ptot = sum(prv);
+  const rank = D.order ? (x=>{ const i=D.order.indexOf(x.name); return i<0?99:i; }) : null;
+  g.sort((a,b)=> rank ? rank(a)-rank(b) : b.spend-a.spend);
+  g.forEach((x,i)=>{ x.ord=i; x.share = tot.spend ? x.spend/tot.spend : 0; const p=pmap.get(x.name); x.roas_dv = p && p.roas!=null && x.roas!=null ? x.roas-p.roas : null; x.roas_d = deltaHtml('roas', x.roas, p?p.roas:null); });
+  tot.share = 1; tot.roas_dv = null;
+  // 그래프: 광고비(막대) + ROAS(선)
+  const labels = g.map(x=>x.name);
+  audChart = dualChart('audChart', labels, {label:'광고비', data:g.map(x=>x.spend)}, {label:'ROAS', data:g.map(x=>x.roas==null?null:Math.round(x.roas*100))}, won, (v,axis)=> v==null?'-':nf.format(v)+'%');
+  // 표
+  const totDelta = deltaHtml('roas', tot.roas, ptot.spend ? ptot.roas : null);
+  const cols = [
+    {k:'ord', l:D.label, html:r=>`${esc(r.name)}<div class="sbar" style="width:${Math.max(2,Math.round(r.share*100))}%"></div>`},
+    {k:'spend',l:'광고비',f:won},{k:'share',l:'비중',f:v=>pct(v,1)},{k:'impressions',l:'노출',f:n0},{k:'clicks',l:'링크 클릭',f:n0},{k:'ctr',l:'CTR',f:v=>pct(v)},
+    {k:'purchases',l:'구매',f:n0},{k:'cpa',l:'CPA',f:won},{k:'purchase_value',l:'구매 매출',f:won},{k:'roas',l:'ROAS',f:roasF},
+    {k:'roas_dv',l:'ROAS 증감',html:r=>r.roas_d.replace('class="dl','style="font-size:12px;margin:0" class="dl'),f:()=>totDelta.replace('class="dl','style="font-size:12px;margin:0" class="dl')},
+  ];
+  if (!S.sort.aud || S.audSortDim!==dim) { S.sort.aud = {k:'ord', dir:'asc'}; S.audSortDim = dim; }
+  table(document.getElementById('audTable'), 'aud', cols, g, tot);
+  const tb = document.getElementById('audTable'); const tr = tb.querySelector('tr.total'); if (tr) tb.appendChild(tr);  // 합계는 맨 아래
 }
+document.addEventListener('click', e=>{ const b=e.target.closest('#audTabs button'); if(!b) return; S.aud=b.dataset.aud; renderBreakdowns(); });
+document.addEventListener('click', e=>{ const b=e.target.closest('#flowTabs button'); if(!b) return; S.flow=b.dataset.flow; renderFlow(cur()); });
 
 /* ---------- 소재 전체 ---------- */
 function renderAdTable(rows, total, prows, ptotal){
@@ -889,7 +943,7 @@ function downloadCsv(){
 /* ---------- 렌더 ---------- */
 function render(){
   const c = cur(), p = prev(); const tc = sum(c), tp = sum(p);
-  renderKpis(tc,tp); renderFunnel(tc); renderFreqShared(c); renderEngagement(tc,tp); renderBrands(); renderWeekly(c); renderDow(c); renderTrend(c, p); renderDaily(c,tc);
+  renderKpis(tc,tp); renderFunnel(tc); renderFreqShared(c); renderEngagement(tc,tp); renderBrands(); renderConv(c); renderFlow(c); renderWeekly(c); renderDow(c); renderDaily(c,tc);
   renderObjectives(c,p); renderCampaigns(c,tc,p,tp); renderAdsets(c,tc,p,tp); renderProducts(c,tc,p,tp); renderEvents(c,tc); renderCreatives(c); S.galLimit=40; renderGallery(c); renderHeat(); renderProdAg(); renderBreakdowns(); renderAdTable(c,tc,p,tp);
 }
 function buildBrandOptions(){
@@ -935,6 +989,7 @@ async function init(){
     const tag = (ACCT.tag||{})[base];
     ads.forEach(r=>{ if (tag) { r._brand=tag; r.campaign=`[${tag}] ${r.campaign}`; r.adset=`[${tag}] ${r.adset}`; } });
     ag.forEach(r=>{ if (r.adset) r._product = productOf(r.adset); if (tag) { r._brand=tag; if (r.campaign) r.campaign=`[${tag}] ${r.campaign}`; } });
+    if (tag) pl.forEach(r=>{ r._brand=tag; });
     return {ads, meta, creatives, ag, pl, campaigns, adsets, freq, tag};
   }));
   const ads = parts.flatMap(x=>x.ads).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
@@ -969,16 +1024,15 @@ document.getElementById('btnCsv').addEventListener('click', downloadCsv);
 ['galSort','galStatus'].forEach(id=>document.getElementById(id).addEventListener('change', ()=>{ S.galLimit=40; renderGallery(cur()); }));
 document.getElementById('galSearch').addEventListener('input', ()=>{ S.galLimit=40; renderGallery(cur()); });
 document.getElementById('galMore').addEventListener('click', ()=>{ S.galLimit += 40; renderGallery(cur()); });
-document.getElementById('trendTabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; S.trendMetric=b.dataset.k; renderTrend(cur(), prev()); });
 document.getElementById('agCamp').addEventListener('change', e=>{ S.agProd=e.target.value; renderHeat(); renderBreakdowns(); });
 document.getElementById('crTabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; S.crMetric=b.dataset.cr; renderCreatives(cur()); });
 let TAB = 'summary';
 try { TAB = sessionStorage.getItem('tab') || 'summary'; } catch(e) {}
+if (!document.querySelector(`#tabNav a[data-tab="${TAB}"]`)) TAB = 'summary';   // 없어진 탭(일별 추이·데이터)은 요약으로
 function showTab(t){
   TAB = t; try { sessionStorage.setItem('tab', t); } catch(e) {}
   document.querySelectorAll('#tabNav a').forEach(a=>a.classList.toggle('on', a.dataset.tab===t));
   document.querySelectorAll('main section[data-tab]').forEach(sec=>sec.classList.toggle('show', sec.dataset.tab===t && sec.style.display!=='none'));
-  if (t==='daily' && chart) chart.resize();
   Object.values(CH).forEach(c=>{ try { c.resize(); } catch(e){} });
   window.scrollTo({top:0});
 }
